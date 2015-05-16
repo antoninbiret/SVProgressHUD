@@ -33,6 +33,7 @@ static UIImage *SVProgressHUDSuccessImage;
 static UIImage *SVProgressHUDErrorImage;
 static SVProgressHUDMaskType SVProgressHUDDefaultMaskType;
 static UIView *SVProgressHUDExtensionView;
+static UIView *SVProgressHUDCustomIndefiniteView;
 
 static const CGFloat SVProgressHUDRingRadius = 18;
 static const CGFloat SVProgressHUDRingNoTextRadius = 24;
@@ -139,6 +140,11 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
 + (void)setViewForExtension:(UIView *)view{
     [self sharedView];
     SVProgressHUDExtensionView = view;
+}
+
++ (void)setViewForIndefiniteProgress:(UIView *)view{
+  [self sharedView];
+  SVProgressHUDCustomIndefiniteView = view;
 }
 
 
@@ -401,7 +407,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
 	
 	if(string) {
-        self.indefiniteAnimatedView.radius = SVProgressHUDRingRadius;
+//        self.indefiniteAnimatedView.radius = SVProgressHUDRingRadius;
         [self.indefiniteAnimatedView sizeToFit];
         
         CGPoint center = CGPointMake((CGRectGetWidth(self.hudView.bounds)/2), 36.0f);
@@ -411,9 +417,10 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
             self.backgroundRingLayer.position = self.ringLayer.position = CGPointMake((CGRectGetWidth(self.hudView.bounds)/2), 36.0f);
         }
 	} else {
-        self.indefiniteAnimatedView.radius = SVProgressHUDRingNoTextRadius;
+//        self.indefiniteAnimatedView.radius = SVProgressHUDRingNoTextRadius;
         [self.indefiniteAnimatedView sizeToFit];
-        
+    
+    
         CGPoint center = CGPointMake((CGRectGetWidth(self.hudView.bounds)/2), CGRectGetHeight(self.hudView.bounds)/2);
         self.indefiniteAnimatedView.center = center;
         
@@ -421,7 +428,6 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
             self.backgroundRingLayer.position = self.ringLayer.position = CGPointMake((CGRectGetWidth(self.hudView.bounds)/2), CGRectGetHeight(self.hudView.bounds)/2);
         }
     }
-    
     [CATransaction commit];
 }
 
@@ -631,7 +637,6 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
     self.progress = progress;
     
     self.stringLabel.text = string;
-    [self updatePosition];
     
     if(progress >= 0) {
         self.imageView.image = nil;
@@ -697,6 +702,7 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
         
         [self setNeedsDisplay];
     }
+  [self updatePosition];
 }
 
 - (UIImage *)image:(UIImage *)image withTintColor:(UIColor *)color{
@@ -806,7 +812,10 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
 
 #pragma mark - Ring progress animation
 
-- (SVIndefiniteAnimatedView *)indefiniteAnimatedView {
+- (UIView<InfiniteProgressViewProtocol> *)indefiniteAnimatedView {
+    if (SVProgressHUDCustomIndefiniteView != nil) {
+      return SVProgressHUDCustomIndefiniteView;
+    }
     if (_indefiniteAnimatedView == nil) {
         _indefiniteAnimatedView = [[SVIndefiniteAnimatedView alloc] initWithFrame:CGRectZero];
         _indefiniteAnimatedView.strokeThickness = SVProgressHUDRingThickness;
